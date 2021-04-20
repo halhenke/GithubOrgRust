@@ -1,0 +1,7 @@
+env_files = [
+    "./.env"
+]
+
+[tasks.github]
+command = "cargo"
+args = ["run", "--example=github", "ucsd-progsys/liquidhaskell"]

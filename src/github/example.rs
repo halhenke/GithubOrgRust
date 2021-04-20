@@ -1,4 +1,5 @@
 use anyhow::*;
+use diesel::Table;
 use graphql_client::*;
 use log::*;
 use prettytable::*;
@@ -9,8 +10,8 @@ type URI = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "examples/schema.graphql",
-    query_path = "examples/query_1.graphql",
+    schema_path = "src/github/schema.graphql",
+    query_path = "src/github/query_1.graphql",
     response_derives = "Debug"
 )]
 struct RepoView;
@@ -35,7 +36,7 @@ fn parse_repo_name(repo_name: &str) -> Result<(&str, &str), anyhow::Error> {
     }
 }
 
-fn main() -> Result<(), anyhow::Error> {
+pub fn main() -> Result<(), anyhow::Error> {
     dotenv::dotenv().ok();
     env_logger::init();
 
