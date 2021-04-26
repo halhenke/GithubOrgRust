@@ -28,7 +28,7 @@ struct Env {
     github_api_token: String,
 }
 
-fn parse_repo_name(repo_name: &str) -> Result<(&str, &str), anyhow::Error> {
+pub fn parse_repo_name(repo_name: &str) -> Result<(&str, &str), anyhow::Error> {
     let mut parts = repo_name.split('/');
     match (parts.next(), parts.next()) {
         (Some(owner), Some(name)) => Ok((owner, name)),
