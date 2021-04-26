@@ -4,6 +4,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 use sqlx::{
     ConnectOptions, Connection, Error, Executor, Pool, Sqlite, SqliteConnection, SqlitePool,
 };
+use std::env;
 use std::str::FromStr;
 
 pub fn do_this() {
@@ -19,7 +20,8 @@ pub async fn connect_db() -> Result<(), anyhow::Error> {
     // let con = Connection::connect(url)
     // let conn = SQLiteConnection::connect()
     // let p = SqlitePool::
-    let mut conn = SqliteConnectOptions::from_str(SQLITE_DB)?
+    let db = &env::var("DATABASE_URL")?;
+    let mut conn = SqliteConnectOptions::from_str(db)?
         // let mut conn = SqliteConnectOptions::new()
         //     .filename(SQLITE_DB)
         .foreign_keys(true)
@@ -37,7 +39,7 @@ pub async fn connect_db() -> Result<(), anyhow::Error> {
         name TEXT NOT NULL PRIMARY KEY,
         lastrun TEXT
     );
-    ",
+            ",
     );
     conn.execute(mkOrg).await?;
     // pool.execute(mkOrg).await?;
@@ -53,12 +55,12 @@ pub async fn connect_db() -> Result<(), anyhow::Error> {
         FOREIGN KEY(org)
             REFERENCES org (name)
         );
-    ",
+            ",
     );
     conn.execute(mkRepo).await?;
     // pool.execute(mkRepo).await?;
 
-    let mkRepoQuery: Query<Sqlite, _> = sqlx::query(
+    let mkRepoQuery: Query<Sqlite, _> = sqlx::query!(
         "
         CREATE table IF NOT EXISTS repoQuery (
             name TEXT NOT NULL,
@@ -73,7 +75,7 @@ pub async fn connect_db() -> Result<(), anyhow::Error> {
             FOREIGN KEY(org)
                 REFERENCES org (name)
         );
-    ",
+            ",
     );
     conn.execute(mkRepoQuery).await?;
     // pool.execute(mkRepoQuery).await?;

@@ -1,0 +1,44 @@
+query OrgView($org: String!){
+    rateLimit {
+        cost
+        remaining
+        resetAt
+    }
+    organization(login: $org) {
+        repositories(orderBy: {field: PUSHED_AT, direction: DESC}, first: 100) {
+        edges {
+            node {
+                name,
+                description,
+                descriptionHTML,
+                shortDescriptionHTML,
+                stargazers(first: 1) {
+                    totalCount
+                }
+                createdAt,
+                pushedAt,
+                updatedAt,
+                primaryLanguage {
+                    name
+                }
+                languages(first: 10) {
+                    edges {
+                        node {
+                            name
+                        }
+                    }
+                }
+                repositoryTopics(first: 10) {
+                    edges {
+                    node {
+                        topic {
+                        name
+                        }
+                    }
+                }
+            }
+            }
+        }
+        }
+    }
+}
