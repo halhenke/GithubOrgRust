@@ -2,5 +2,6 @@
 
 pub mod db;
 pub mod github;
+pub mod types;
 
 // extern crate GithubOrgRust;

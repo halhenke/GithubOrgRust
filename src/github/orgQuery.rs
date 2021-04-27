@@ -4,6 +4,7 @@ use prettytable::{cell, row};
 // use super::example::parse_repo_name;
 use log::{info, warn};
 use serde::{Deserialize, Deserializer};
+use std::iter::Iterator;
 use structopt::StructOpt;
 
 type URI = String;
@@ -17,7 +18,7 @@ type DateTime = String;
     query_path = "src/github/orgQuery.graphql",
     response_derives = "Debug"
 )]
-struct OrgView;
+pub struct OrgView;
 
 #[derive(StructOpt)]
 #[structopt(author, about)]
@@ -76,11 +77,6 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
         .expect("missing organization")
         .repositories;
 
-    // let stars: Option<i64> = response_data
-    //     .repository
-    //     .as_ref()
-    //     .map(|repo| repo.stargazers.total_count);
-
     // println!("{}/{} - 🌟 {}", owner, name, stars.unwrap_or(0),);
 
     let mut table = prettytable::Table::new();
@@ -92,8 +88,16 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     // .expect()
     {
         if let Some(repo) = repo {
-            println!("Type of repo is {}", std::any::type_name_of_val(&repo));
-            table.add_row(row!(&org, repo.node.unwrap().name, "Hooooo"));
+            let r = repo.node.expect("missing");
+            let stars: i64 = r.stargazers.total_count;
+            // .expect("Stars");
+            // .ok_or(anyhow::Error)
+            // .as_ref()
+            // .map(|repo| repo.stargazers.total_count)
+            // .ok_or(anyhow::Error())?;
+
+            // println!("Type of repo is {}", std::any::type_name_of_val(&repo));
+            table.add_row(row!(&org, r.name, stars));
         }
     }
     table.printstd();
@@ -114,12 +118,25 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+use crate::types::{Org, Repo, RepoQuery};
+
+// pub fn repo_to_repo(
+//     repo: &super::orgQuery::org_view::OrgViewOrganizationRepositoriesEdges,
+// ) -> Repo {
+//     return Repo {
+//         name: "Repo".to_string(),
+//         org: "Google".to_string(),
+//         createdAt: std::time::SystemTime::now(),
+//         lastrun: std::time::SystemTime::now(),
+//     };
+// }
+
 // use GithubOrgRust::github::orgQuery::org_view::OrgViewOrganizationRepositoriesEdges;
 
 // pub fn get_stars(
 //     repo: root::github::orgQuery::org_view::OrgViewOrganizationRepositoriesEdges,
 // ) -> Option<i64> {
-//     let stars: Option<i64> = repo.as_ref().map(|repo| repo.stargazers.total_count);
+//     let stars: Option<i64>: repo.as_ref().map(|repo| repo.stargazers.total_count);
 //     return stars;
 // }
 // pub fn get_stars<T>(repo: T) -> Option<i64> {
