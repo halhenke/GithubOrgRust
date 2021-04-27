@@ -2,6 +2,7 @@ use anyhow::{Context, Error};
 use graphql_client::{GraphQLQuery, Response};
 use prettytable::{cell, row};
 // use super::example::parse_repo_name;
+use chrono::prelude::*;
 use log::{info, warn};
 use serde::{Deserialize, Deserializer};
 use std::iter::Iterator;
@@ -88,6 +89,7 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     // .expect()
     {
         if let Some(repo) = repo {
+            println!("Repo: {:?}", Repo::repo_from_repo(&repo, org.clone()));
             let r = repo.node.expect("missing");
             let stars: i64 = r.stargazers.total_count;
             // .expect("Stars");
