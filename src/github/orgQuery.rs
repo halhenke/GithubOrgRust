@@ -2,6 +2,7 @@ use anyhow::{Context, Error};
 use graphql_client::{GraphQLQuery, Response};
 use prettytable::{cell, row};
 // use super::example::parse_repo_name;
+use crate::types::{Org, Repo, RepoQuery};
 use chrono::prelude::*;
 use log::{info, warn};
 use serde::{Deserialize, Deserializer};
@@ -33,6 +34,7 @@ struct Env {
     github_api_token: String,
 }
 
+/// Supposed to work if we roughly pass the Github Org from the Command Line
 pub fn query_org_from_cli() -> Result<(), anyhow::Error> {
     // dotenv::dotenv().ok();
     // env_logger::init();
@@ -49,9 +51,13 @@ pub fn github_query_from_main(org: String) -> Result<(), anyhow::Error> {
     return query_org(org);
 }
 
+/// Run the Github Org Query and Process the Results
 pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     dotenv::dotenv().ok();
     env_logger::init();
+
+    let mut repos: Vec<Repo> = Vec::new();
+    let mut repoQueries: Vec<RepoQuery> = Vec::new();
 
     let config: Env = envy::from_env().context("while reading from environment")?;
 
@@ -90,6 +96,10 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     {
         if let Some(repo) = repo {
             println!("Repo: {:?}", Repo::repo_from_repo(&repo, org.clone()));
+            let repoStruct: Repo = Repo::repo_from_repo(&repo, org.clone());
+            let repoQueryStruct: RepoQuery = RepoQuery::repoQuery_from_repo(&repo, org.clone());
+            repos.push(repoStruct);
+            repoQueries.push(repoQueryStruct);
             let r = repo.node.expect("missing");
             let stars: i64 = r.stargazers.total_count;
             // .expect("Stars");
@@ -119,8 +129,6 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     // table.printstd();
     Ok(())
 }
-
-use crate::types::{Org, Repo, RepoQuery};
 
 // pub fn repo_to_repo(
 //     repo: &super::orgQuery::org_view::OrgViewOrganizationRepositoriesEdges,
