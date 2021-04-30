@@ -1,3 +1,5 @@
+// use futures_core::future::BoxFuture;
+// use futures::future::BoxFuture;
 use sqlx::query::Query;
 use sqlx::sqlite::SqliteArguments;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
@@ -15,23 +17,24 @@ const SQLITE_DB: &'static str = "sqlite://rust-git-org.sqlite";
 
 // const WORDS: &'static str = "hello rust!";
 
-pub async fn connect_db() -> Result<(), anyhow::Error> {
-    // pub async fn connect_db() -> Result<SqlitePool, anyhow::Error> {
-    // let con = Connection::connect(url)
-    // let conn = SQLiteConnection::connect()
-    // let p = SqlitePool::
-    let db = &env::var("DATABASE_URL")?;
-    let mut conn = SqliteConnectOptions::from_str(db)?
-        // let mut conn = SqliteConnectOptions::new()
-        //     .filename(SQLITE_DB)
-        .foreign_keys(true)
-        .create_if_missing(true)
-        .connect()
-        .await?;
-    // let pool = SqlitePool::connect(SQLITE_DB).await?;
-    // pool.
-    // conn.execute("PRAGMA foreign_keys = ON;").await?;
-    // pool.execute("PRAGMA foreign_keys = ON;").await?;
+pub async fn make_tables() -> Result<(), anyhow::Error> {
+    // // pub async fn connect_db() -> Result<SqlitePool, anyhow::Error> {
+    // // let con = Connection::connect(url)
+    // // let conn = SQLiteConnection::connect()
+    // // let p = SqlitePool::
+    // let db = &env::var("DATABASE_URL")?;
+    // let mut conn = SqliteConnectOptions::from_str(db)?
+    //     // let mut conn = SqliteConnectOptions::new()
+    //     //     .filename(SQLITE_DB)
+    //     .foreign_keys(true)
+    //     .create_if_missing(true)
+    //     .connect()
+    //     .await?;
+    // // let pool = SqlitePool::connect(SQLITE_DB).await?;
+    // // pool.
+    // // conn.execute("PRAGMA foreign_keys = ON;").await?;
+    // // pool.execute("PRAGMA foreign_keys = ON;").await?;
+    let mut conn = get_connection().await?;
 
     let mkOrg = sqlx::query(
         "
@@ -84,4 +87,17 @@ pub async fn connect_db() -> Result<(), anyhow::Error> {
 
     // return Ok(pool);
     return Ok(());
+}
+
+pub async fn get_connection() -> Result<SqliteConnection, anyhow::Error> {
+    // pub async fn get_connection() -> Future<Result<SqliteConnection, anyhow::Error>> {
+    let db = &env::var("DATABASE_URL")?;
+    let mut conn = SqliteConnectOptions::from_str(db)?
+        // let mut conn = SqliteConnectOptions::new()
+        //     .filename(SQLITE_DB)
+        .foreign_keys(true)
+        .create_if_missing(true)
+        .connect()
+        .await?;
+    return Ok(conn);
 }

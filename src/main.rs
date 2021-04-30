@@ -9,6 +9,6 @@ fn main() -> Result<(), anyhow::Error> {
     println!("Hello, world!");
     // GithubOrgRust::db::sqlx::do_this();
     // GithubOrgRust::github::example::main()
-    task::block_on(GithubOrgRust::db::sqlx::connect_db());
+    // task::block_on(GithubOrgRust::db::sqlx::connect_db());
     return GithubOrgRust::github::orgQuery::github_query_from_main("Google".to_string());
 }
