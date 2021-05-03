@@ -22,29 +22,16 @@ type DateTime = String;
 )]
 pub struct OrgView;
 
-#[derive(StructOpt)]
-#[structopt(author, about)]
-struct Command {
-    #[structopt(name = "organization")]
-    org: String,
-}
-
 #[derive(Debug, Deserialize)]
 struct Env {
     github_api_token: String,
 }
 
-/// Supposed to work if we roughly pass the Github Org from the Command Line
-pub fn query_org_from_cli() -> Result<(), anyhow::Error> {
-    // dotenv::dotenv().ok();
-    // env_logger::init();
-
-    // let config: Env = envy::from_env().context("while reading from environment")?;
-    let args = Command::from_args();
-
-    let org = args.org;
-    // let (owner, name) = parse_repo_name(&repo).unwrap_or(("tomhoule", "graphql-client"));
-    return query_org(org);
+#[derive(StructOpt)]
+#[structopt(author, about)]
+struct Command {
+    #[structopt(name = "organization")]
+    org: String,
 }
 
 pub fn github_query_from_main(org: String) -> Result<(), anyhow::Error> {
@@ -89,15 +76,20 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     let mut table = prettytable::Table::new();
     table.set_format(*prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
     table.set_titles(row!(b => "Org", "Repo", "Stars"));
+    let time_now = Utc::now();
 
     for repo in repositories.edges.expect("Repository Nodes is NULL")
     // .nodes
     // .expect()
     {
         if let Some(repo) = repo {
-            println!("Repo: {:?}", Repo::repo_from_repo(&repo, org.clone()));
-            let repoStruct: Repo = Repo::repo_from_repo(&repo, org.clone());
-            let repoQueryStruct: RepoQuery = RepoQuery::repoQuery_from_repo(&repo, org.clone());
+            // println!(
+            //     "Repo: {:?}",
+            //     Repo::repo_from_repo(&repo, org.clone(), time_now)
+            // );
+            let repoStruct: Repo = Repo::repo_from_repo(&repo, org.clone(), time_now);
+            let repoQueryStruct: RepoQuery =
+                RepoQuery::repoQuery_from_repo(&repo, org.clone(), time_now);
             repos.push(repoStruct);
             repoQueries.push(repoQueryStruct);
             let r = repo.node.expect("missing");

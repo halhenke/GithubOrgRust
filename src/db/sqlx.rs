@@ -1,23 +1,29 @@
 // use futures_core::future::BoxFuture;
 // use futures::future::BoxFuture;
+use serde::{Deserialize, Serialize};
 use sqlx::query::Query;
 use sqlx::sqlite::SqliteArguments;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use sqlx::types::Json;
 use sqlx::{
     ConnectOptions, Connection, Error, Executor, Pool, Sqlite, SqliteConnection, SqlitePool,
 };
 use std::env;
 use std::str::FromStr;
 
+use crate::types::{Org, Repo, RepoQuery, SQLITE_DB};
+
 pub fn do_this() {
     println!("Hey this called");
 }
 
-const SQLITE_DB: &'static str = "sqlite://rust-git-org.sqlite";
-
 // const WORDS: &'static str = "hello rust!";
 
-pub async fn make_tables() -> Result<(), anyhow::Error> {
+/**
+   Turns out this is probably not the right way to Create Tables as the Crate will not
+   compile when they are missing - instead we use Migrations
+*/
+pub async fn make_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::Error> {
     // // pub async fn connect_db() -> Result<SqlitePool, anyhow::Error> {
     // // let con = Connection::connect(url)
     // // let conn = SQLiteConnection::connect()
@@ -34,7 +40,7 @@ pub async fn make_tables() -> Result<(), anyhow::Error> {
     // // pool.
     // // conn.execute("PRAGMA foreign_keys = ON;").await?;
     // // pool.execute("PRAGMA foreign_keys = ON;").await?;
-    let mut conn = get_connection().await?;
+    // let mut conn = get_connection().await?;
 
     let mkOrg = sqlx::query(
         "
@@ -52,7 +58,7 @@ pub async fn make_tables() -> Result<(), anyhow::Error> {
         CREATE table IF NOT EXISTS repo (
         name TEXT NOT NULL,
         org TEXT NOT NULL,
-        created TEXT,
+        createdAt TEXT,
         lastrun TEXT,
         PRIMARY KEY(org, name),
         FOREIGN KEY(org)
@@ -71,8 +77,8 @@ pub async fn make_tables() -> Result<(), anyhow::Error> {
             stars INTEGER,
             languages TEXT,
             topics TEXT,
-            created TEXT,
-            updated TEXT,
+            createdAt TEXT,
+            updatedAt TEXT,
             lastrun TEXT,
             PRIMARY KEY(org, name),
             FOREIGN KEY(org)
@@ -85,9 +91,15 @@ pub async fn make_tables() -> Result<(), anyhow::Error> {
 
     // pool.execute(sqlx::query("SELECT"));
 
+    println!("Tables are back dude!");
     // return Ok(pool);
     return Ok(());
 }
+
+// struct Row {
+//     id: i64,
+//     person: Json<Org>,
+// }
 
 pub async fn get_connection() -> Result<SqliteConnection, anyhow::Error> {
     // pub async fn get_connection() -> Future<Result<SqliteConnection, anyhow::Error>> {
@@ -101,3 +113,116 @@ pub async fn get_connection() -> Result<SqliteConnection, anyhow::Error> {
         .await?;
     return Ok(conn);
 }
+
+pub async fn destroy_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::Error> {
+    // println!("DestroyTables Called");
+    conn.execute(
+        "
+        DROP TABLE IF EXISTS org;
+        ",
+    )
+    .await?;
+    conn.execute(
+        "
+        DROP TABLE IF EXISTS repo;
+        ",
+    )
+    .await?;
+    conn.execute(
+        "
+        DROP TABLE IF EXISTS repoQuery;
+        ",
+    )
+    .await?;
+    println!("Tables are gone Dude!!!");
+    return Ok(());
+}
+
+pub async fn upsert_org(conn: &mut SqliteConnection, anOrg: Org) -> Result<(), anyhow::Error> {
+    let upsert = sqlx::query!(
+        r#"
+        INSERT INTO org(name, lastRun)
+        VALUES(?, ?)
+        ON CONFLICT(name)
+        DO UPDATE SET lastrun=excluded.lastrun;
+        "#,
+        anOrg.name,
+        anOrg.lastrun,
+    )
+    .fetch_one(conn)
+    .await;
+    return upsert.and(Ok(())).map_err(|e| anyhow::anyhow!(e));
+    // return Ok(());
+    // return upsert.fetch_one(conn).await?;
+    // .bind(org);
+    // return conn.execute(upsert).await?;
+}
+
+pub async fn upsert_repo(conn: &mut SqliteConnection, repo: Repo) -> Result<(), anyhow::Error> {
+    let upsert = sqlx::query!(
+        r#"
+        INSERT INTO repo(name, org, createdAt, lastrun)
+        VALUES(?, ?, ?, ?)
+        ON CONFLICT(name, org)
+        DO UPDATE SET lastrun=excluded.lastrun;
+        "#,
+        repo.name,
+        repo.org,
+        repo.createdAt,
+        repo.lastrun
+    )
+    .fetch_optional(conn)
+    .await;
+    return upsert.and(Ok(())).map_err(|e| anyhow::anyhow!(e));
+    // return Ok(());
+}
+
+pub async fn upsert_repoQuery(
+    conn: &mut SqliteConnection,
+    repoQuery: RepoQuery,
+) -> Result<(), anyhow::Error> {
+    let languages = repoQuery.languages.join(", ");
+    let topics = repoQuery.topics.join(", ");
+    let upsert = sqlx::query!(
+        r#"
+        INSERT INTO repoQuery(name, org, stars, languages, topics, createdAt, updatedAt, lastrun)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(name, org)
+        DO UPDATE SET
+            stars=excluded.stars,
+            languages=excluded.languages,
+            topics=excluded.topics,
+            updatedAt=excluded.updatedAt,
+            lastrun=excluded.lastrun;
+        "#,
+        repoQuery.name,
+        repoQuery.org,
+        repoQuery.stars,
+        languages,
+        topics,
+        repoQuery.createdAt,
+        repoQuery.updatedAt,
+        repoQuery.lastrun,
+    )
+    .fetch_optional(conn)
+    .await;
+    return upsert.and(Ok(())).map_err(|e| anyhow::anyhow!(e));
+}
+
+// pub async fn upsert_org(conn: &SqliteConnection, anOrg: Org) -> Result<(), anyhow::Error> {
+//     let upsert = sqlx::query!(
+//         r#"
+//         INSERT INTO org(anOrg)
+//         VALUES($1)
+//         ON CONFLICT(name)
+//         DO UPDATE SET lastrun=excluded.lastrun;
+//         "#,
+//         Json(anOrg) as _
+//     )
+//     .fetch_one(conn)
+//     .await?;
+//     return Ok(());
+//     // return upsert.fetch_one(conn).await?;
+//     // .bind(org);
+//     // return conn.execute(upsert).await?;
+// }
