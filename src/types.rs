@@ -1,13 +1,17 @@
 use crate::github::orgQuery::org_view::OrgViewOrganizationRepositoriesEdges;
 use chrono::prelude::*;
+use serde::{Deserialize, Serialize};
+// use serde_json::{Map, Value};
 
-#[derive(Eq, PartialEq, Debug)]
+pub const SQLITE_DB: &'static str = "sqlite://rust-git-org.sqlite";
+
+#[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct Org {
-    name: String,
-    lastrun: DateTime<Utc>,
+    pub name: String,
+    pub lastrun: DateTime<Utc>,
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct Repo {
     pub name: String,
     pub org: String,
@@ -15,16 +19,22 @@ pub struct Repo {
     pub lastrun: DateTime<Utc>,
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct RepoQuery {
-    name: String,
-    org: String,
-    createdAt: DateTime<Utc>,
-    updatedAt: DateTime<Utc>,
-    lastrun: DateTime<Utc>,
-    topics: Vec<String>,
-    languages: Vec<String>,
-    stars: i64,
+    pub name: String,
+    pub org: String,
+    pub createdAt: DateTime<Utc>,
+    pub updatedAt: DateTime<Utc>,
+    pub lastrun: DateTime<Utc>,
+    pub topics: Vec<String>,
+    pub languages: Vec<String>,
+    pub stars: i64,
+}
+
+impl Org {
+    pub fn new(name: String, lastrun: DateTime<Utc>) -> Org {
+        return Org { name, lastrun };
+    }
 }
 
 impl Repo {
@@ -42,13 +52,17 @@ impl Repo {
         };
     }
 
-    pub fn repo_from_repo(repo: &OrgViewOrganizationRepositoriesEdges, org: String) -> Repo {
+    pub fn repo_from_repo(
+        repo: &OrgViewOrganizationRepositoriesEdges,
+        org: String,
+        run_time: DateTime<Utc>,
+    ) -> Repo {
         let _repo = repo.node.as_ref().unwrap();
         return Repo::new(
             _repo.name.clone(),
             org,
             _repo.created_at.parse().expect("time did not match"),
-            Utc::now(),
+            run_time,
         );
     }
 }
@@ -75,9 +89,14 @@ impl RepoQuery {
             stars,
         };
     }
+    pub fn languages_out(&self) -> String {
+        self.languages.join(", ")
+    }
+
     pub fn repoQuery_from_repo(
         repo: &OrgViewOrganizationRepositoriesEdges,
         org: String,
+        run_time: DateTime<Utc>,
     ) -> RepoQuery {
         let _repo = repo.node.as_ref().unwrap();
         return RepoQuery::new(
@@ -85,7 +104,7 @@ impl RepoQuery {
             org,
             _repo.created_at.parse().expect("time did not match"),
             _repo.updated_at.parse().expect("time did not match"),
-            Utc::now(),
+            run_time,
             _repo
                 .repository_topics
                 .edges
