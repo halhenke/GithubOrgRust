@@ -4,6 +4,22 @@ use serde::{Deserialize, Serialize};
 // use serde_json::{Map, Value};
 
 pub const SQLITE_DB: &'static str = "sqlite://rust-git-org.sqlite";
+// pub const ORGS: &'static Vec<&str> = Vec::from([
+// static ORGS: Vec<&str> = Vec::from([
+pub const ORGS: &[&str] = &[
+    "google",
+    "google-research",
+    "PAIR-code",
+    "facebook",
+    "microsoft",
+    "deepmind",
+    "rapidsai",
+    "openai",
+    "JuliaMath",
+    "JuliaData",
+    "queryverse",
+    "FluxML",
+];
 
 #[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct Org {
