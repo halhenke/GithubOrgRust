@@ -14,6 +14,7 @@ use GithubOrgRust::glue::update_orgs;
 #[async_std::main]
 // async fn main(args: Args) -> Result<(), anyhow::Error> {
 async fn main() -> Result<(), anyhow::Error> {
+    env_logger::init();
     dotenv::dotenv()?;
     println!("Hello, world!");
     let args = Args::from_args();
