@@ -101,6 +101,15 @@ pub async fn make_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::Erro
 //     person: Json<Org>,
 // }
 
+pub async fn get_pool() -> Result<Pool<Sqlite>, anyhow::Error> {
+    let db = &env::var("DATABASE_URL")?;
+    let pool = sqlx::sqlite::SqlitePoolOptions::new()
+        .max_connections(4)
+        .connect(SQLITE_DB)
+        .await;
+    return pool.map_err(|e| anyhow::anyhow!(e));
+}
+
 pub async fn get_connection() -> Result<SqliteConnection, anyhow::Error> {
     // pub async fn get_connection() -> Future<Result<SqliteConnection, anyhow::Error>> {
     let db = &env::var("DATABASE_URL")?;
