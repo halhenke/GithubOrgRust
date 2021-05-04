@@ -218,6 +218,24 @@ pub async fn upsert_repoQuery(
     return upsert.and(Ok(())).map_err(|e| anyhow::anyhow!(e));
 }
 
+pub async fn upsert_tuple(
+    conn: &mut SqliteConnection,
+    org: Org,
+    repos: Vec<Repo>,
+    repoQueries: Vec<RepoQuery>,
+) -> Result<(), anyhow::Error> {
+    // join!(upsert_org(conn, org));
+    upsert_org(conn, org).await?;
+    // repos.into_iter().map(|r| upsert_repo(conn, r));
+    for repo in repos {
+        upsert_repo(conn, repo).await?;
+    }
+    for repoQuery in repoQueries {
+        upsert_repoQuery(conn, repoQuery).await?;
+    }
+    return Ok(());
+}
+
 // pub async fn upsert_org(conn: &SqliteConnection, anOrg: Org) -> Result<(), anyhow::Error> {
 //     let upsert = sqlx::query!(
 //         r#"
