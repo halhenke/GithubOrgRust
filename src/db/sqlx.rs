@@ -1,5 +1,6 @@
 // use futures_core::future::BoxFuture;
 // use futures::future::BoxFuture;
+use futures::join;
 use serde::{Deserialize, Serialize};
 use sqlx::query::Query;
 use sqlx::sqlite::SqliteArguments;
@@ -158,7 +159,7 @@ pub async fn upsert_org(conn: &mut SqliteConnection, anOrg: Org) -> Result<(), a
         anOrg.name,
         anOrg.lastrun,
     )
-    .fetch_one(conn)
+    .fetch_optional(conn)
     .await;
     return upsert.and(Ok(())).map_err(|e| anyhow::anyhow!(e));
     // return Ok(());
