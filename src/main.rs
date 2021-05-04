@@ -4,6 +4,7 @@
 // extern crate async;
 use async_std::task;
 use chrono::prelude::*;
+use sqlx::migrate::{MigrateError, Migrator};
 use structopt::StructOpt;
 use GithubOrgRust::db::sqlx::{destroy_tables, get_connection, make_tables, upsert_org};
 use GithubOrgRust::types::{Org, Repo, RepoQuery, ORGS, SQLITE_DB};

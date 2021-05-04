@@ -34,21 +34,23 @@ struct Command {
     org: String,
 }
 
-pub fn github_query_from_main(org: String) -> Result<(), anyhow::Error> {
-    return query_org(org);
-}
+// pub fn github_query_from_main(org: String) -> Result<(), anyhow::Error> {
+//     return query_org(org);
+// }
 
 /// Run the Github Org Query and Process the Results
-pub fn query_org(org: String) -> Result<(), anyhow::Error> {
+pub async fn query_org(orgName: String) -> Result<(Org, Vec<Repo>, Vec<RepoQuery>), anyhow::Error> {
     dotenv::dotenv().ok();
-    env_logger::init();
+    // env_logger::init();
 
     let mut repos: Vec<Repo> = Vec::new();
     let mut repoQueries: Vec<RepoQuery> = Vec::new();
 
     let config: Env = envy::from_env().context("while reading from environment")?;
 
-    let q = OrgView::build_query(org_view::Variables { org: org.clone() });
+    let q = OrgView::build_query(org_view::Variables {
+        org: orgName.clone(),
+    });
 
     let client = reqwest::blocking::Client::builder()
         .user_agent("graphql-rust/0.9.0")
@@ -78,6 +80,8 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     table.set_titles(row!(b => "Org", "Repo", "Stars"));
     let time_now = Utc::now();
 
+    let org = Org::new(orgName.clone(), time_now);
+
     for repo in repositories.edges.expect("Repository Nodes is NULL")
     // .nodes
     // .expect()
@@ -87,9 +91,9 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
             //     "Repo: {:?}",
             //     Repo::repo_from_repo(&repo, org.clone(), time_now)
             // );
-            let repoStruct: Repo = Repo::repo_from_repo(&repo, org.clone(), time_now);
+            let repoStruct: Repo = Repo::repo_from_repo(&repo, orgName.clone(), time_now);
             let repoQueryStruct: RepoQuery =
-                RepoQuery::repoQuery_from_repo(&repo, org.clone(), time_now);
+                RepoQuery::repoQuery_from_repo(&repo, orgName.clone(), time_now);
             repos.push(repoStruct);
             repoQueries.push(repoQueryStruct);
             let r = repo.node.expect("missing");
@@ -101,7 +105,7 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
             // .ok_or(anyhow::Error())?;
 
             // println!("Type of repo is {}", std::any::type_name_of_val(&repo));
-            table.add_row(row!(&org, r.name, stars));
+            table.add_row(row!(&orgName, r.name, stars));
         }
     }
     table.printstd();
@@ -119,7 +123,8 @@ pub fn query_org(org: String) -> Result<(), anyhow::Error> {
     // }
 
     // table.printstd();
-    Ok(())
+    // Ok(())
+    return Ok((org, repos, repoQueries));
 }
 
 // pub fn repo_to_repo(
