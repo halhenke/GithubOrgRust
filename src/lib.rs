@@ -1,4 +1,5 @@
 #![feature(type_name_of_val)]
+#![feature(async_closure)]
 
 pub mod db;
 pub mod github;
