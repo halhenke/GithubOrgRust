@@ -119,8 +119,8 @@ pub async fn get_connection() -> Result<SqliteConnection, anyhow::Error> {
         .foreign_keys(true)
         .create_if_missing(true)
         .connect()
-        .await?;
-    return Ok(conn);
+        .await;
+    return conn.map_err(|e| anyhow::anyhow!(e));
 }
 
 pub async fn destroy_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::Error> {
