@@ -6,10 +6,9 @@ use async_std::task;
 use chrono::prelude::*;
 use structopt::StructOpt;
 use GithubOrgRust::db::sqlx::{destroy_tables, get_connection, make_tables, upsert_org};
-use GithubOrgRust::types::{Org, Repo, RepoQuery, SQLITE_DB};
+use GithubOrgRust::types::{Org, Repo, RepoQuery, ORGS, SQLITE_DB};
 
-use sqlx::migrate::{MigrateError, Migrator};
-
+use GithubOrgRust::glue::update_orgs;
 // static MIGRATOR: Migrator = sqlx::migrate!();
 
 #[async_std::main]
@@ -55,11 +54,15 @@ async fn parse_and_run(args: Args) -> Result<(), anyhow::Error> {
     let mut conn = get_connection().await?;
     let org_defaults = "Google".to_string();
     let org = Org::new(org_defaults, Utc::now());
+    let default_orgs = Vec::from(ORGS).iter().map(|o| o.to_string()).collect();
+
+    println!("args are {:?}", &args);
+
     let e = match args.cmd {
-        Some(DestroyTables) => destroy_tables(&mut conn).await,
-        Some(MakeTables) => make_tables(&mut conn).await,
-        Some(UpdateOrgs) => upsert_org(&mut conn, org).await,
-        Some(RunMigrations) => migrate().await,
+        Some(SubCommand::RunMigrations) => migrate().await,
+        Some(SubCommand::DestroyTables) => destroy_tables(&mut conn).await,
+        Some(SubCommand::MakeTables) => make_tables(&mut conn).await,
+        Some(SubCommand::UpdateOrgs) => update_orgs(&mut conn, default_orgs).await,
         // None => ()
         None => Err(anyhow::anyhow!(
             "This is fucked - What do you want me to do?"
