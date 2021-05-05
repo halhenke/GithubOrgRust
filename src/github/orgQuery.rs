@@ -77,7 +77,7 @@ pub async fn query_org(orgName: String) -> Result<(Org, Vec<Repo>, Vec<RepoQuery
 
     let mut table = prettytable::Table::new();
     table.set_format(*prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-    table.set_titles(row!(b => "Org", "Repo", "Stars"));
+    table.set_titles(row!(b => "Org", "Repo", "Stars", "Updated At"));
     let time_now = Utc::now();
 
     let org = Org::new(orgName.clone(), time_now);
@@ -98,6 +98,7 @@ pub async fn query_org(orgName: String) -> Result<(Org, Vec<Repo>, Vec<RepoQuery
             repoQueries.push(repoQueryStruct);
             let r = repo.node.expect("missing");
             let stars: i64 = r.stargazers.total_count;
+            let u_at: chrono::DateTime<Utc> = r.updated_at.parse().expect("kialler");
             // .expect("Stars");
             // .ok_or(anyhow::Error)
             // .as_ref()
@@ -105,7 +106,7 @@ pub async fn query_org(orgName: String) -> Result<(Org, Vec<Repo>, Vec<RepoQuery
             // .ok_or(anyhow::Error())?;
 
             // println!("Type of repo is {}", std::any::type_name_of_val(&repo));
-            table.add_row(row!(&orgName, r.name, stars));
+            table.add_row(row!(Fg-> &orgName, Fg->r.name, Fy->stars, Fg->u_at));
         }
     }
     table.printstd();
