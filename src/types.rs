@@ -18,6 +18,8 @@ pub const ORGS: &[&str] = &[
     "JuliaMath",
     "JuliaData",
     "queryverse",
+    "kowainik",
+    "tweag",
     "FluxML",
 ];
 
