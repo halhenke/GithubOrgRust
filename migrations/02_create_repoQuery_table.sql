@@ -7,7 +7,7 @@ CREATE table IF NOT EXISTS repoQuery (
     createdAt TEXT,
     updatedAt TEXT,
     lastrun TEXT,
-    PRIMARY KEY(org, name),
+    PRIMARY KEY(org, name, lastrun),
     FOREIGN KEY(org)
         REFERENCES org (name)
 );

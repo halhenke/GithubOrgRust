@@ -81,7 +81,7 @@ pub async fn make_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::Erro
             createdAt TEXT,
             updatedAt TEXT,
             lastrun TEXT,
-            PRIMARY KEY(org, name),
+            PRIMARY KEY(org, name, lastrun),
             FOREIGN KEY(org)
                 REFERENCES org (name)
         );
@@ -128,7 +128,7 @@ pub async fn destroy_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::E
     // println!("DestroyTables Called");
     conn.execute(
         "
-        DROP TABLE IF EXISTS org;
+        DROP TABLE IF EXISTS repoQuery;
         ",
     )
     .await?;
@@ -140,7 +140,7 @@ pub async fn destroy_tables(conn: &mut SqliteConnection) -> Result<(), anyhow::E
     .await?;
     conn.execute(
         "
-        DROP TABLE IF EXISTS repoQuery;
+        DROP TABLE IF EXISTS org;
         ",
     )
     .await?;
@@ -197,7 +197,7 @@ pub async fn upsert_repoQuery(
         r#"
         INSERT INTO repoQuery(name, org, stars, languages, topics, createdAt, updatedAt, lastrun)
         VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(name, org)
+        ON CONFLICT(name, org, lastrun)
         DO UPDATE SET
             stars=excluded.stars,
             languages=excluded.languages,
