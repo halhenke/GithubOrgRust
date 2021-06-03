@@ -21,14 +21,17 @@ pub const ORGS: &[&str] = &[
     "kowainik",
     "tweag",
     "FluxML",
+    "uber-research",
 ];
 
+/// The Data Type corresponding to Github Organisations
 #[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct Org {
     pub name: String,
     pub lastrun: DateTime<Utc>,
 }
 
+/// The Data Type corresponding to Github Repositories
 #[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct Repo {
     pub name: String,
@@ -37,6 +40,7 @@ pub struct Repo {
     pub lastrun: DateTime<Utc>,
 }
 
+/** The Data Type corresponding to info retrieved about a Github Repository that changes over time */
 #[derive(Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct RepoQuery {
     pub name: String,
