@@ -6,10 +6,10 @@ use async_std::task;
 use chrono::prelude::*;
 use sqlx::migrate::{MigrateError, Migrator};
 use structopt::StructOpt;
+use GithubOrgRust::db::info::list_orgs;
 use GithubOrgRust::db::sqlx::{destroy_tables, get_connection, make_tables, upsert_org};
-use GithubOrgRust::types::{Org, Repo, RepoQuery, ORGS, SQLITE_DB};
-
 use GithubOrgRust::glue::update_orgs;
+use GithubOrgRust::types::{Org, Repo, RepoQuery, ORGS, SQLITE_DB};
 // static MIGRATOR: Migrator = sqlx::migrate!();
 
 #[async_std::main]
@@ -43,8 +43,10 @@ struct Args {
 #[derive(Debug, PartialEq, StructOpt)]
 enum SubCommand {
     DestroyTables,
+    ListOrgs,
     MakeTables,
     UpdateOrgs,
+    RunOrg { org: String },
     RunMigrations,
 }
 
@@ -64,8 +66,11 @@ async fn parse_and_run(args: Args) -> Result<(), anyhow::Error> {
         Some(SubCommand::RunMigrations) => migrate().await,
         Some(SubCommand::DestroyTables) => destroy_tables(&mut conn).await,
         Some(SubCommand::MakeTables) => make_tables(&mut conn).await,
+        Some(SubCommand::ListOrgs) => list_orgs(),
         Some(SubCommand::UpdateOrgs) => update_orgs(&mut conn, default_orgs).await,
         // None => ()
+        Some(SubCommand::RunOrg { org }) => update_orgs(&mut conn, vec![org]).await,
+        // Some(SubCommand::RunOrg { org }) => Ok(println!("You entered {}", org)),
         None => Err(anyhow::anyhow!(
             "This is fucked - What do you want me to do?"
         )),
