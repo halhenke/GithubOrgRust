@@ -28,7 +28,3 @@ structopt = "0.3.21"
 [[example]]
 name = "github"
 path = "src/github/example.rs"
-
-
-# [config]
-# github_api_token = "04c2244e41218293b2c7fab589899d78f8a38850"

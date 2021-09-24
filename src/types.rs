@@ -1,11 +1,8 @@
-use crate::github::orgQuery::org_view::OrgViewOrganizationRepositoriesEdges;
+use crate::github::org_query::org_view::OrgViewOrganizationRepositoriesEdges;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-// use serde_json::{Map, Value};
 
 pub const SQLITE_DB: &'static str = "sqlite://rust-git-org.sqlite";
-// pub const ORGS: &'static Vec<&str> = Vec::from([
-// static ORGS: Vec<&str> = Vec::from([
 pub const ORGS: &[&str] = &[
     "google",
     "google-research",
@@ -20,6 +17,8 @@ pub const ORGS: &[&str] = &[
     "queryverse",
     "kowainik",
     "tweag",
+    "aws",
+    "awslabs",
     "FluxML",
     "uber-research",
 ];
@@ -36,7 +35,7 @@ pub struct Org {
 pub struct Repo {
     pub name: String,
     pub org: String,
-    pub createdAt: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
     pub lastrun: DateTime<Utc>,
 }
 
@@ -45,8 +44,8 @@ pub struct Repo {
 pub struct RepoQuery {
     pub name: String,
     pub org: String,
-    pub createdAt: DateTime<Utc>,
-    pub updatedAt: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
     pub lastrun: DateTime<Utc>,
     pub topics: Vec<String>,
     pub languages: Vec<String>,
@@ -63,13 +62,13 @@ impl Repo {
     pub fn new(
         name: String,
         org: String,
-        createdAt: DateTime<Utc>,
+        created_at: DateTime<Utc>,
         lastrun: DateTime<Utc>,
     ) -> Repo {
         return Repo {
             name,
             org,
-            createdAt,
+            created_at,
             lastrun,
         };
     }
@@ -93,8 +92,8 @@ impl RepoQuery {
     pub fn new(
         name: String,
         org: String,
-        createdAt: DateTime<Utc>,
-        updatedAt: DateTime<Utc>,
+        created_at: DateTime<Utc>,
+        updated_at: DateTime<Utc>,
         lastrun: DateTime<Utc>,
         topics: Vec<String>,
         languages: Vec<String>,
@@ -103,8 +102,8 @@ impl RepoQuery {
         return RepoQuery {
             name,
             org,
-            createdAt,
-            updatedAt,
+            created_at,
+            updated_at,
             lastrun,
             topics,
             languages,
@@ -115,7 +114,7 @@ impl RepoQuery {
         self.languages.join(", ")
     }
 
-    pub fn repoQuery_from_repo(
+    pub fn repo_query_from_repo(
         repo: &OrgViewOrganizationRepositoriesEdges,
         org: String,
         run_time: DateTime<Utc>,
