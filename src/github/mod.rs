@@ -1,2 +1,1 @@
-// pub mod example;
-pub mod orgQuery;
+pub mod org_query;

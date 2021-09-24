@@ -1,7 +1,3 @@
-// pub mod lib;
-// #[feature(type_name_of_val)]
-// extern crate GithubOrgRust;
-// extern crate async;
 use async_std::task;
 use chrono::prelude::*;
 use sqlx::migrate::{MigrateError, Migrator};
@@ -10,29 +6,15 @@ use GithubOrgRust::db::info::list_orgs;
 use GithubOrgRust::db::sqlx::{destroy_tables, get_connection, make_tables, upsert_org};
 use GithubOrgRust::glue::update_orgs;
 use GithubOrgRust::types::{Org, Repo, RepoQuery, ORGS, SQLITE_DB};
-// static MIGRATOR: Migrator = sqlx::migrate!();
 
 #[async_std::main]
-// async fn main(args: Args) -> Result<(), anyhow::Error> {
 async fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
     dotenv::dotenv()?;
     println!("Hello, world!");
     let args = Args::from_args();
-    // migrate().await?;
-    // GithubOrgRust::db::sqlx::do_this();
-    // GithubOrgRust::github::example::main()
-    // task::block_on(GithubOrgRust::db::sqlx::connect_db());
     return parse_and_run(args).await;
-    // return Ok(());
 }
-
-// #[derive(StructOpt)]
-// #[structopt(author, about)]
-// struct Command {
-//     #[structopt(name = "organization")]
-//     org: String,
-// }
 
 #[derive(StructOpt, PartialEq, Debug)]
 struct Args {
@@ -68,17 +50,13 @@ async fn parse_and_run(args: Args) -> Result<(), anyhow::Error> {
         Some(SubCommand::MakeTables) => make_tables(&mut conn).await,
         Some(SubCommand::ListOrgs) => list_orgs(),
         Some(SubCommand::UpdateOrgs) => update_orgs(&mut conn, default_orgs).await,
-        // None => ()
         Some(SubCommand::RunOrg { org }) => update_orgs(&mut conn, vec![org]).await,
-        // Some(SubCommand::RunOrg { org }) => Ok(println!("You entered {}", org)),
         None => Err(anyhow::anyhow!(
             "This is fucked - What do you want me to do?"
         )),
     };
     return e;
-    // return Ok(e);
-    // return Ok::Result<(), anyhow::Error>(e);
-    // return GithubOrgRust::github::orgQuery::github_query_from_main("Google".to_string());
+
 }
 
 async fn migrate() -> Result<(), anyhow::Error> {
@@ -89,16 +67,3 @@ async fn migrate() -> Result<(), anyhow::Error> {
         .await?;
     m.run(&pool).await.map_err(|e| anyhow::anyhow!(e))
 }
-
-// /// Supposed to work if we roughly pass the Github Org from the Command Line
-// pub fn query_org_from_cli() -> Result<(), anyhow::Error> {
-//     // dotenv::dotenv().ok();
-//     // env_logger::init();
-
-//     // let config: Env = envy::from_env().context("while reading from environment")?;
-//     let args = Command::from_args();
-
-//     let org = args.org;
-//     // let (owner, name) = parse_repo_name(&repo).unwrap_or(("tomhoule", "graphql-client"));
-//     return query_org(org);
-// }

@@ -28,7 +28,3 @@ structopt = "0.3.21"
 [[example]]
 name = "github"
 path = "src/github/example.rs"
-
-
-# [config]
-# github_api_token = "***REMOVED***"
